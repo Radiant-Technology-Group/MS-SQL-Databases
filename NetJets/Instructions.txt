@@ -1,0 +1,45 @@
+
+
+Restore the PulseNetJets.bak database to SQLServer
+Create and test Database Mail profile (named DatabaseMailProfile) use supplied script if desired, modify account name and password
+
+
+Install and test IIS on Moxie server (get server hostname for Pulse script)
+Create Pulse directory in IIS 
+Place 1.1.1.0 folder in pulse folder. verify http://CMHPRDOMNI51/pulse/1.1.1.0/pulse.zip works
+In Moxie Studio create a workspace named Scripting Storage
+Create new script and paste in Moxie Pulse Script contents
+Modify script with Server Path and database credentials
+Save to Scripting Storage workspace
+Create task to execute Moxie Pulse Script named PULSE_LIVE_TASK and schedule to run evey 216 seconds all day
+Save to Scripting Storage workspace
+Assign PULSE_LIVE_TASK to all players and verify devices are created in tblDevice
+
+
+Modify each sql script with Username and database name
+Run sql scripts to create Jobs
+Test Scheduled Jobs
+
+get NetJets notification emal address
+Update tblCustomer in Pulse database with Radiant and NetJets noification email addresses`
+Update tblCustomer set NotifyEmail  = 'Alert-Down@radianttech.net;alerts@netjets.com' WHERE CustomerID = 'NET'
+
+
+Enable Database mail
+sp_configure 'show advanced options', 1;
+GO
+RECONFIGURE;
+GO
+ 
+sp_configure 'Database Mail XPs', 1;
+GO
+RECONFIGURE
+GO
+
+PLS-AWSPRD-LSNR
+ 
+
+
+
+
+

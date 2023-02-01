@@ -1,0 +1,128 @@
+# ******************************************************************************
+# Moxie version: 7.03.6690.1
+# Created: 2018-07-23
+# Revised:
+# Version:4
+# Author: Jordan Elasky (jordan.elasky@radianttech.net), Matt Weiland (mweiland@radianttech.net), & Nicolas Valdiviezo (nicolas.valdiviezo@radianttech.net)
+# ******************************************************************************
+# Description: Radiant Pulse Monitoring Platform
+# ******************************************************************************
+
+# ******************************************************************************
+# Imports
+# ******************************************************************************
+
+#Python
+import clr
+
+#.Net File Version Comparison
+clr.AddReference("System")
+from System.Diagnostics import FileVersionInfo, Process
+from System.Net import WebClient
+
+#File Opperations
+clr.AddReference("Mscorlib")
+from System.IO import Path, File, Directory, SearchOption
+#clr.AddReference("System.IO.Compression.ZipFile")
+clr.AddReference("System.IO.Compression.FileSystem")
+
+from System.IO.Compression.ZipFile import ExtractToDirectory
+
+#.NET Imports
+clr.AddReference("System.Data")
+from System.Data import SqlClient, SqlDbType
+
+# ******************************************************************************
+# Customization Points
+# ******************************************************************************
+
+#Client Serial
+serial = "NET-13960-591169488";
+
+#Pulse Version
+version = "1.1.1.0";
+
+#Pulse DLL Path
+directory = "C:\\interop\\pulse\\" + version + "\\";
+
+#Moxie Server Path
+webserver = 1;
+
+#Moxie Server Path
+serverpath = "http://files.radianttech.net/pulse/";
+
+
+# DOES NO CHANGE
+#DB Info ("" password = No Update to PW)
+server = "pulseprod.radianttech.net"
+port = "63556"
+db = "Pulse"
+uid = "Pulse2Serv"
+#pw = ""
+pw = "88985665CON@*!"
+
+prunedll = 0;
+
+
+# ******************************************************************************
+# Main
+# ******************************************************************************
+
+#Pulse Version Prune
+if prunedll == 1:
+	dlllist = Directory.EnumerateFiles("C:\\interop\\pulse\\", "*" ,SearchOption.AllDirectories)
+	for file in dlllist:
+		try:
+			File.Delete(file);
+		except:
+			pass
+
+#Check Version for Update
+try:
+	installed = FileVersionInfo.GetVersionInfo(directory + "pulse.dll").ProductVersion;
+except:
+	installed = "Not Installed";
+Debug.WriteLine(installed);
+#Verify Version
+if version == installed:
+	Debug.WriteLine("Pulse Valid: " + version);
+else:
+	#Create Directory	
+	if File.Exists(directory): pass;
+	else: Directory.CreateDirectory(directory);
+
+	if webserver == 1:
+		#Download New Version of Pulse from Web
+		pulsedll = WebClient()
+		Debug.WriteLine(serverpath + version + "/pulse.dll" + "Directory:" + directory + "pulse.dll")
+		pulsedll.DownloadFile(serverpath + version + "/pulse.zip", directory + "pulse.zip")
+		Debug.WriteLine("Pulse Updated");
+		ExtractToDirectory(directory + "pulse.zip", directory);
+
+#Import Pulse
+Debug.WriteLine(directory + "pulse.dll");
+clr.AddReferenceToFileAndPath(directory + "pulse.dll")
+from Pulse import *
+
+#Pulse
+cl = Client();
+
+#Check If Password Update Requested
+if pw != "":
+	dbstatus = cl.DbUpdate(server, port, db, uid, pw, Application.Kind)
+	Debug.WriteLine(dbstatus);
+
+status = "";
+
+#Run
+try:
+	status = cl.RunPulse(serial);
+	Debug.WriteLine(status);
+except Exception as ex:
+	Debug.WriteLine(ex);
+	
+
+##Install
+if status == "Run Install":
+	status = cl.Install(serial);
+	Debug.WriteLine(status);

@@ -1,0 +1,14 @@
+IF NOT EXISTS (SELECT * FROM msdb.dbo.sysmail_account WHERE name = 'Connect')   EXECUTE msdb.dbo.sysmail_add_account_sp   @account_name = 'Connect',   @description = '',   @email_address = 'connect@radianttech.net',   @display_name = 'Pulse',   @replyto_address = 'support@radianttech.net',   @mailserver_type = 'SMTP',   @mailserver_name = 'outlook.office365.com',   @port = 587,   @username = 'connect@radianttech.net',   @use_default_credentials = 0,   @enable_ssl = 1,   @password = NULL;
+IF NOT EXISTS (SELECT * FROM msdb.dbo.sysmail_profile WHERE name = 'DatabaseMailProfile')   EXECUTE msdb.dbo.sysmail_add_profile_sp   @profile_name = 'DatabaseMailProfile',   @description = '';
+IF NOT EXISTS (SELECT * FROM msdb.dbo.sysmail_profileaccount spa   JOIN msdb.dbo.sysmail_profile sp ON spa.profile_id = sp.profile_id   JOIN msdb.dbo.sysmail_account sa ON spa.account_id = sa.account_id   WHERE sp.name = 'DatabaseMailProfile'   and sa.name = 'Connect'   EXECUTE msdb.dbo.sysmail_add_profileaccount_sp   @profile_name = 'DatabaseMailProfile',   @account_name = 'Connect',   @sequence_number = 1
+
+USE MSDB
+GO
+Select * from sysmail_profile
+Select * from sysmail_account
+Select * from sysmail_server
+
+GO--To check the Sent_Status of last Email .
+
+Select * from sysmail_allitems WHERE sent_date > getdate() -30 ORDER BY sent_date DESC
+Select* From Sysmail_log WHERE log_date > getdate() -30 ORDER BY log_date DESC
